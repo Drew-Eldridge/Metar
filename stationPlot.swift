@@ -99,10 +99,11 @@ func drawWindBarb(turtle: Turtle, color: Color, speed: Int, angle: Int)  {
     let halfBarb = 10
     let fullBarb = 20
 
-    turtle.penColor(color: color)
+    turtle.penColor(color: Color(.black))
     turtle.right(degrees:angle)
     turtle.penDown()
     turtle.forward(steps: half)
+    turtle.penColor(color: color)
     turtle.push() //halfway pt barbs start
     turtle.forward(steps: half)
     turtle.pop()
@@ -170,6 +171,9 @@ func drawBarbMax(turtle: Turtle, speed: Int, angle: Int, gust: Int?, canvasSizeX
         let topSpeed = speed ?? 0
 
         drawWindBarb(turtle: turtle, color: Color(.red), speed: topSpeed, angle: angle)
+        turtle.penUp()
+        turtle.home()
+        turtle.penDown()
         drawWindBarb(turtle: turtle, color: Color(.black), speed: speed, angle: angle)
     } else {
         drawWindBarb(turtle: turtle, color: Color(.black), speed: speed, angle: angle)
