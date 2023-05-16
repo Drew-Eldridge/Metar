@@ -23,10 +23,14 @@ class ForegroundLayer : Layer {
             let plot = Station(
               x: coords(latitude: met.latitude!, longitude: met.longitude!, Xsize: 1903.0, Ysize: 937.0).x,
               y: coords(latitude: met.latitude!, longitude: met.longitude!, Xsize: 1903.0, Ysize: 937.0).y,
+//              x: coords(latitude: met.latitude!, longitude: met.longitude!, Xsize: 1680.0, Ysize: 939.0).x,
+  //            y: coords(latitude: met.latitude!, longitude: met.longitude!, Xsize: 1680.0, Ysize: 939.0).y,
+
               size: 14,
               station_id: met.station_id,
-              wind_barb_direction: 45.0,
-              wind_barb_speed:15,
+              wind_dir_degrees: met.wind_dir_degrees ?? 0,
+              wind_speed_kt: met.wind_speed_kt ?? 0,
+              wind_gust_kt: met.wind_gust_kt ?? 0,
               altim_in_hg: met.altim_in_hg!,
               dew_point: met.dewpoint_c!,
               visibility: met.visibility_statute_mi,
@@ -51,7 +55,7 @@ class ForegroundLayer : Layer {
 //            print(coords(latitude: met.latitude!, longitude: met.longitude!, Xsize: 1903.0, Ysize: 937.0))
 //            print(met.latitude)
 //            print(met.longitude)
-            print(met.wx_string)
+         //   print(met.wx_string)
             insert(entity: plot, at:.front)
         }
         

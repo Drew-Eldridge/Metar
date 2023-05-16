@@ -8,8 +8,9 @@ class Station : RenderableEntity {
     let y : Int
     let size : Int
     let station_id : String
-    let wind_barb_direction: Double
-    let wind_barb_speed: Int
+    let wind_dir_degrees: Int
+    let wind_speed_kt: Int
+    let wind_gust_kt: Int?
     let altim_in_hg: Double
     let dew_point: Double
     let visibility: Double?
@@ -45,13 +46,14 @@ class Station : RenderableEntity {
     let mist : Image
     let drizzle : Image    
  
-    init(x: Int, y: Int, size: Int=30, station_id: String, wind_barb_direction: Double, wind_barb_speed: Int, altim_in_hg: Double, dew_point: Double, visibility: Double?, precip: String?, precip_in: Double?, pcp3hr_in: Double?, pcp6hr_in: Double?, pcp24hr_in: Double?, snow_in: Double?, sky_cover1: String?, sky_cover2: String?, sky_cover3: String?, sky_cover4: String?, flight_category: String?, temp_c: Double, ceiling: Int?, cloud_base_ft_agl1: Int?, cloud_base_ft_agl2: Int?, cloud_base_ft_agl3: Int?, cloud_base_ft_agl4: Int?) {
+    init(x: Int, y: Int, size: Int=30, station_id: String, wind_dir_degrees: Int, wind_speed_kt: Int, wind_gust_kt: Int?, altim_in_hg: Double, dew_point: Double, visibility: Double?, precip: String?, precip_in: Double?, pcp3hr_in: Double?, pcp6hr_in: Double?, pcp24hr_in: Double?, snow_in: Double?, sky_cover1: String?, sky_cover2: String?, sky_cover3: String?, sky_cover4: String?, flight_category: String?, temp_c: Double, ceiling: Int?, cloud_base_ft_agl1: Int?, cloud_base_ft_agl2: Int?, cloud_base_ft_agl3: Int?, cloud_base_ft_agl4: Int?) {
         self.x = x
         self.y = y
         self.size = size
         self.station_id = station_id
-        self.wind_barb_direction = wind_barb_direction
-        self.wind_barb_speed = wind_barb_speed
+        self.wind_dir_degrees = wind_dir_degrees
+        self.wind_speed_kt = wind_speed_kt
+        self.wind_gust_kt = wind_gust_kt
         self.altim_in_hg = altim_in_hg
         self.dew_point = dew_point
         self.visibility = visibility
@@ -141,6 +143,40 @@ class Station : RenderableEntity {
         canvas.render(fillStyle,triangle)
     }
 
+    func barb(canvas:Canvas, x:Int, y:Int, length: Int, angle: Double) {
+        canvas.render(StrokeStyle(color:Color(.black)))
+
+        if angle <= 90 {
+            let anew = Double(angle * (Double.pi / 180.0))
+            let xnew = x - Int(Float(length) * (sin(Float(anew))))
+            let ynew = y + Int(Float(length) * (cos(Float(anew))))
+            let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+            canvas.render(lines)
+        }
+        if angle < 180 && angle > 90 {
+            let anew = Double((180.0 - angle) * (Double.pi / 180.0))
+            let xnew = x - Int(Float(length) * (sin(Float(anew))))
+            let ynew = y - Int(Float(length) * (cos(Float(anew))))
+            let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+            canvas.render(lines)
+        }
+        
+        if angle >= 180 && angle < 270 {
+            let anew = Double((angle - 180.0) * (Double.pi / 180.0))
+            let xnew = x + Int(Float(length) * (sin(Float(anew))))
+            let ynew = y - Int(Float(length) * (cos(Float(anew))))
+            let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+            canvas.render(lines)
+        }
+        if angle >= 180 && angle < 360 {
+            let anew = Double((360.0 - angle) * (Double.pi / 180.0))
+            let xnew = x + Int(Float(length) * (sin(Float(anew))))
+            let ynew = y + Int(Float(length) * (cos(Float(anew))))
+            let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+            canvas.render(lines)
+        }
+    }
+
     override func setup(canvasSize:Size, canvas:Canvas) {
         canvas.setup(lrain, mrain, hrain, lsnow, msnow, hsnow, mist, drizzle)
     }
@@ -208,7 +244,6 @@ class Station : RenderableEntity {
                 temp.font = "\(size/2)pt Arial"
                 canvas.render(FillStyle(color:Color(.black)), ceilin)
             }
-
             switch precip {
             case "-RA":
                 lrain.renderMode = .destinationRect(Rect(topLeft:Point(x:x - (size * (5/2)), y: y - (size / 2)), size:Size(width:size, height:size)))
@@ -237,6 +272,8 @@ class Station : RenderableEntity {
             default:
                 do {}
             }
+            barb(canvas: canvas, x: x, y: y, length: size*2, angle: Double(wind_dir_degrees))
+            
         }  
     }
 }
