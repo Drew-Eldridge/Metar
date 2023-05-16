@@ -143,6 +143,33 @@ class Station : RenderableEntity {
         canvas.render(fillStyle,triangle)
     }
 
+    func minibarb(lines: Lines, x:Int, y:Int, length: Int, angle: Double, anew: Double) {
+        if angle <= Double.pi / 2 {
+            let xnew = x - Int(Float(length) * (sin(Float(anew))))
+            let ynew = y - Int(Float(length) * (cos(Float(anew))))
+            lines.moveTo(Point(x:xnew, y:ynew))
+            lines.lineTo(Point(x:xnew - length,y:ynew - length))
+        }
+        if angle < Double.pi && angle > Double.pi / 2 {
+            let xnew = x + Int(Float(length) * (sin(Float(anew))))
+            let ynew = y - Int(Float(length) * (cos(Float(anew))))
+            lines.moveTo(Point(x:xnew, y:ynew))
+            lines.lineTo(Point(x:xnew + length,y:ynew - length))
+        }
+        if angle >= Double.pi && angle < Double.pi * (3/2) {
+            let xnew = x - Int(Float(length) * (sin(Float(anew))))
+            let ynew = y - Int(Float(length) * (cos(Float(anew))))
+            lines.moveTo(Point(x:xnew, y:ynew)) 
+            lines.lineTo(Point(x:xnew - length,y:ynew - length))
+        }
+        if angle >= Double.pi * (3/2) && angle < Double.pi * 2 {
+            let xnew = x + Int(Float(length) * (sin(Float(anew))))
+            let ynew = y - Int(Float(length) * (cos(Float(anew))))
+            lines.moveTo(Point(x:xnew, y:ynew))
+            lines.lineTo(Point(x:xnew + length,y:ynew - length))
+        }
+    }
+    
     func barb(canvas:Canvas, x:Int, y:Int, length: Int, angle: Double) {
         canvas.render(StrokeStyle(color:Color(.black)))
 
@@ -151,6 +178,9 @@ class Station : RenderableEntity {
             let xnew = x - Int(Float(length) * (sin(Float(anew))))
             let ynew = y + Int(Float(length) * (cos(Float(anew))))
             let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+            lines.lineTo(Point(x:xnew , y:ynew))
+            lines.lineTo(Point(x:xnew - length / 2,y:ynew - length / 2))
+            minibarb(lines: lines, x: xnew, y: ynew, length: length / 2, angle: angle, anew: anew )
             canvas.render(lines)
         }
         if angle < 180 && angle > 90 {
@@ -158,6 +188,8 @@ class Station : RenderableEntity {
             let xnew = x - Int(Float(length) * (sin(Float(anew))))
             let ynew = y - Int(Float(length) * (cos(Float(anew))))
             let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+            lines.lineTo(Point(x:xnew + length / 2,y:ynew - length / 2))
+            minibarb(lines: lines, x: xnew, y: ynew, length: length / 2, angle: angle, anew: anew )
             canvas.render(lines)
         }
         
@@ -166,13 +198,17 @@ class Station : RenderableEntity {
             let xnew = x + Int(Float(length) * (sin(Float(anew))))
             let ynew = y - Int(Float(length) * (cos(Float(anew))))
             let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+            lines.lineTo(Point(x:xnew - length / 2,y:ynew - length / 2))
+            minibarb(lines: lines, x: xnew, y: ynew, length: length / 2, angle: angle, anew: anew )
             canvas.render(lines)
         }
-        if angle >= 180 && angle < 360 {
+        if angle >= 270 && angle < 360 {
             let anew = Double((360.0 - angle) * (Double.pi / 180.0))
             let xnew = x + Int(Float(length) * (sin(Float(anew))))
             let ynew = y + Int(Float(length) * (cos(Float(anew))))
             let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+            lines.lineTo(Point(x:xnew + length / 2,y:ynew - length / 2))
+            minibarb(lines: lines, x: xnew, y: ynew, length: length / 2, angle: angle, anew: anew )
             canvas.render(lines)
         }
     }
