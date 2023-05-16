@@ -198,7 +198,7 @@ extension Metar: CustomStringConvertible{
     }
 }
 
-let filePath = "../Example-metars.csv"
+let filePath = "Example-metars.csv"
 let fileURL = URL(fileURLWithPath:filePath.expandingTildeInPath)
 
 
@@ -239,7 +239,7 @@ func takeFile(atPath filePath: String) -> [Metar]? {
         //print(fileContents) //debugging
         var metar: [Metar] = []
 
-        for i in 5 ..< 10{
+        for i in 5 ..< 100{
             metar.append(Metar(line: fileContents[i])!)
         }
         return metar

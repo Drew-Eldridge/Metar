@@ -2,7 +2,7 @@ import Foundation
 import Scenes
 import Igis
 
-private func getColorForFlightCategory(_ category: String?) -> Color {
+private func getColoFlightCategory(_ category: String?) -> Color {
     guard let category = category else { return Color(.black) }
      switch category {
     case "VFR":
@@ -16,15 +16,7 @@ private func getColorForFlightCategory(_ category: String?) -> Color {
     default:
         return Color(.black)
     }
-}
-
-func roundToFive(_ number: Int) -> Int {
-    let remainder = number % 5
-    let multiple = number / 5
-    let roundedMultiple = multiple + (remainder >= 3 ? 1 : 0)
-    return roundedMultiple * 5
-}
- 
+} 
  
 func Triangle(canvas:Canvas,fillStyle:FillStyle,leftpoint: DoublePoint,toppoint: DoublePoint,rightpoint:DoublePoint,triangle:Path) {
     //Triangle
@@ -47,10 +39,59 @@ func makeBarb(canvas:Canvas, center: Point, wind_dir_degrees: Double, wind_speed
 
     
     }*/
-func makeBarb(turtle:Turtle, color: Color, speed:Int, angle:Int){
+func barb(canvas:Canvas, x:Int, y:Int, length: Int, angle: Double) {
+    canvas.render(StrokeStyle(color:Color(.black)))
+
+    if angle <= 90 {
+        let anew = Double(angle * (Double.pi / 180.0))
+        let xnew = x - Int(Float(length) * (sin(Float(anew))))
+        let ynew = y + Int(Float(length) * (cos(Float(anew))))
+        let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+//        lines.lineTo(Point(x:xnew , y:ynew))
+//        lines.lineTo(Point(x:xnew - length / 2,y:ynew - length / 2))
+//        minibarb(lines: lines, x: xnew, y: ynew, length: length / 2, angle: angle, anew: anew )
+        canvas.render(lines)
+    }
+    if angle < 180 && angle > 90 {
+        let anew = Double((180.0 - angle) * (Double.pi / 180.0))
+        let xnew = x - Int(Float(length) * (sin(Float(anew))))
+        let ynew = y - Int(Float(length) * (cos(Float(anew))))
+        let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+//        lines.lineTo(Point(x:xnew + length / 2,y:ynew - length / 2))
+//        minibarb(lines: lines, x: xnew, y: ynew, length: length / 2, angle: angle, anew: anew )
+        canvas.render(lines)
+    }
+
+    if angle >= 180 && angle < 270 {
+        let anew = Double((angle - 180.0) * (Double.pi / 180.0))
+        let xnew = x + Int(Float(length) * (sin(Float(anew))))
+        let ynew = y - Int(Float(length) * (cos(Float(anew))))
+        let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+  //      lines.lineTo(Point(x:xnew - length / 2,y:ynew - length / 2))
+//        minibarb(lines: lines, x: xnew, y: ynew, length: length / 2, angle: angle, anew: anew )
+        canvas.render(lines)
+    }
+    if angle >= 270 && angle < 360 {
+        let anew = Double((360.0 - angle) * (Double.pi / 180.0))
+        let xnew = x + Int(Float(length) * (sin(Float(anew))))
+        let ynew = y + Int(Float(length) * (cos(Float(anew))))
+        let lines = Lines(from:Point(x:x, y:y), to:Point(x:xnew, y:ynew))
+    //    lines.lineTo(Point(x:xnew + length / 2,y:ynew - length / 2))
+//        minibarb(lines: lines, x: xnew, y: ynew, length: length / 2, angle: angle, anew: anew )
+        canvas.render(lines)
+    }
+}
+
+
+func roundToFive(_ num:Int) -> Int {
+    return 5*Int(round(Float(num)/5))
+} 
+
+func drawWindBarb(turtle: Turtle, color: Color, speed: Int, angle: Int)  {
+
+    let angle = Double(angle + 180)
     let speed = roundToFive(speed)
-    let ang = Double(angle)
-    
+
     let spineSize = 50
     let half = spineSize / 2
     let barbGap = half / 3
@@ -59,7 +100,7 @@ func makeBarb(turtle:Turtle, color: Color, speed:Int, angle:Int){
     let fullBarb = 20
 
     turtle.penColor(color: color)
-    turtle.right(degrees:ang)
+    turtle.right(degrees:angle)
     turtle.penDown()
     turtle.forward(steps: half)
     turtle.push() //halfway pt barbs start
@@ -67,7 +108,7 @@ func makeBarb(turtle:Turtle, color: Color, speed:Int, angle:Int){
     turtle.pop()
     turtle.push()
 
-    if speed == 5 {
+    if speed == 5 { //why are you special
         turtle.forward(steps: barbGap * 2)
         turtle.right(degrees: 90.0)
         turtle.forward(steps: halfBarb)
@@ -75,6 +116,7 @@ func makeBarb(turtle:Turtle, color: Color, speed:Int, angle:Int){
     }
 
     if speed > 5 && speed <= 40 {
+
         var drawn = speed
         var barbGapMultiplier = 3
 
@@ -97,27 +139,43 @@ func makeBarb(turtle:Turtle, color: Color, speed:Int, angle:Int){
                 drawn -= 5
                 turtle.pop()
             }
-            else { print("Unexpected wind barb interval") }
+            else { print("error") }
 
             barbGapMultiplier -= 1
         }
     }
-
+    turtle.penUp()
     turtle.home() //reset turtle
 }
 
-func drawBarbComplete(turtle: Turtle, speed: Int, gust: Int?, angle: Int) {
+func drawBarbMax(turtle: Turtle, speed: Int, angle: Int, gust: Int?, canvasSizeX: Int, canvasSizeY: Int, Point: Point) {
 
-    if gust != 0 {
-        let topSpeed = gust!
+    turtle.penUp()
+    turtle.forward(steps:canvasSizeY/2)
+    turtle.left(degrees:90)
+    turtle.forward(steps:canvasSizeX/2)
+    turtle.right(degrees:90)
 
-        makeBarb(turtle: turtle, color: Color(.red), speed: topSpeed, angle: angle)
-        makeBarb(turtle: turtle, color: Color(.black), speed: speed, angle: angle)
+    turtle.right(degrees:90)
+    turtle.forward(steps:Point.x)
+    turtle.right(degrees:90)
+    turtle.forward(steps:Point.y)
+    turtle.right(degrees:180)
+    
+    
+    turtle.penDown()
+
+ 
+    if gust != nil && gust ?? 0 > speed ?? 0{
+        let topSpeed = speed ?? 0
+
+        drawWindBarb(turtle: turtle, color: Color(.red), speed: topSpeed, angle: angle)
+        drawWindBarb(turtle: turtle, color: Color(.black), speed: speed, angle: angle)
     } else {
-        makeBarb(turtle: turtle, color: Color(.black), speed: speed, angle: angle)
+        drawWindBarb(turtle: turtle, color: Color(.black), speed: speed, angle: angle)
     }
-} 
-
+}
+ 
 
 class StationPlot : RenderableEntity {
     var didDraw = false
@@ -145,7 +203,7 @@ class StationPlot : RenderableEntity {
     private let visibility: Int //????
 
     //weather
-    private let precip: Double
+    private let precip: String?
     private let precip_in: Double?
     private let pcp3hr_in: Double?
     private let pcp6hr_in: Double?
@@ -167,7 +225,7 @@ class StationPlot : RenderableEntity {
     private let temp_c: Double 
     
     //ceiling
-    private let ceiling: Double 
+    private let ceiling: Int? 
     private let cloud_base_ft_agl1: Int?
     private let cloud_base_ft_agl2: Int?
     private let cloud_base_ft_agl3: Int?
@@ -179,9 +237,18 @@ class StationPlot : RenderableEntity {
     let path3 = Path(fillMode:.fill)
     let path4 = Path(fillMode:.fill) 
 
+    let lrain : Image
+    let mrain : Image
+    let hrain : Image
+    let lsnow : Image
+    let msnow : Image
+    let hsnow : Image
+    let mist : Image
+    let drizzle : Image   
+
     
     
-    init(x: Int, y: Int, size: Int=30, station_id: String, wind_dir_degrees: Int, wind_speed_kt: Int, wind_gust_kt: Int?, altim_in_hg: Double, dewpoint_c: Double, visibility: Int, precip: Double, precip_in: Double?, pcp3hr_in: Double?, pcp6hr_in: Double?, pcp24hr_in: Double?, snow_in: Double?, sky_cover1: String?, sky_cover2: String?, sky_cover3: String?, sky_cover4: String?, flight_category: String?, temp_c: Double, ceiling: Double, cloud_base_ft_agl1: Int?, cloud_base_ft_agl2: Int?, cloud_base_ft_agl3: Int?, cloud_base_ft_agl4: Int?) {
+    init(x: Int, y: Int, size: Int=30, station_id: String, wind_dir_degrees: Int, wind_speed_kt: Int, wind_gust_kt: Int?, altim_in_hg: Double, dewpoint_c: Double, visibility: Int, precip: String?, precip_in: Double?, pcp3hr_in: Double?, pcp6hr_in: Double?, pcp24hr_in: Double?, snow_in: Double?, sky_cover1: String?, sky_cover2: String?, sky_cover3: String?, sky_cover4: String?, flight_category: String?, temp_c: Double, ceiling:Int?, cloud_base_ft_agl1: Int?, cloud_base_ft_agl2: Int?, cloud_base_ft_agl3: Int?, cloud_base_ft_agl4: Int?) {
         self.x = x
         self.y = y
         self.size = size
@@ -209,59 +276,150 @@ class StationPlot : RenderableEntity {
         self.cloud_base_ft_agl2 = cloud_base_ft_agl2
         self.cloud_base_ft_agl3 = cloud_base_ft_agl3
         self.cloud_base_ft_agl4 = cloud_base_ft_agl4
+        guard let lrainURL = URL(string:"https://www.aviationweather.gov/cgi-bin/plot/wxicon.php?scale=1.5&code=-RA") else {
+            fatalError("NO MAP")
+        }
+        lrain = Image(sourceURL:lrainURL)
+
+        guard let mrainURL = URL(string:"https://www.aviationweather.gov/cgi-bin/plot/wxicon.php?scale=1.5&code=RA") else {
+            fatalError("NO MAP")
+        }
+        mrain = Image(sourceURL:mrainURL)
+
+        guard let hrainURL = URL(string:"https://www.aviationweather.gov/cgi-bin/plot/wxicon.php?scale=1.5&code=%2BRA") else {
+            fatalError("NO MAP")
+        }
+        hrain = Image(sourceURL:hrainURL)
+
+        guard let lsnowURL = URL(string:"https://www.aviationweather.gov/cgi-bin/plot/wxicon.php?scale=1.5&code=-SN") else {
+            fatalError("NO MAP")
+        }
+        lsnow = Image(sourceURL:lsnowURL)
+
+        guard let msnowURL = URL(string:"https://www.aviationweather.gov/cgi-bin/plot/wxicon.php?scale=1.5&code=SN") else {
+            fatalError("NO MAP")
+        }
+        msnow = Image(sourceURL:msnowURL)
+
+        guard let hsnowURL = URL(string:"https://www.aviationweather.gov/cgi-bin/plot/wxicon.php?scale=1.5&code=%2BSN") else {
+            fatalError("NO MAP")
+        }
+        hsnow = Image(sourceURL:hsnowURL)
+
+        guard let mistURL = URL(string:"https://www.aviationweather.gov/cgi-bin/plot/wxicon.php?scale=1.5&code=BR") else {
+            fatalError("NO MAP")
+        }
+        mist = Image(sourceURL:mistURL)
+
+        guard let drizzleURL = URL(string:"https://www.aviationweather.gov/cgi-bin/plot/wxicon.php?scale=1.5&code=-DZ") else {
+            fatalError("NO MAP")
+        }
+        drizzle = Image(sourceURL:drizzleURL)
+
+        super.init(name:"stationPlot")
     } 
     
+    override func setup(canvasSize:Size, canvas:Canvas) {
+        canvas.setup(lrain, mrain, hrain, lsnow, msnow, hsnow, mist, drizzle)
+    } 
     
     override func render(canvas: Canvas) {
-        let fillStyle = FillStyle(color:getColorForFlightCategory(flight_category))
-        let strokeStyle = StrokeStyle(color:getColorForFlightCategory(flight_category))
-        canvas.render(fillStyle, strokeStyle)
+        if lrain.isReady && mrain.isReady && hrain.isReady && lsnow.isReady && msnow.isReady && hsnow.isReady && mist.isReady && drizzle.isReady{
+            let fillStyle = FillStyle(color:getColoFlightCategory(flight_category))
+            let strokeStyle = StrokeStyle(color:getColoFlightCategory(flight_category))
+            canvas.render(fillStyle, strokeStyle)
 
-        let circle = Ellipse(center:Point(x: x, y: y), radiusX: size, radiusY: size, fillMode: .stroke)
-        let fullcircle = Ellipse(center:Point(x: x, y: y), radiusX: size, radiusY: size, fillMode: .fill)
+            let circle = Ellipse(center:Point(x: x, y: y), radiusX: size, radiusY: size, fillMode: .stroke)
+            let fullcircle = Ellipse(center:Point(x: x, y: y), radiusX: size, radiusY: size, fillMode: .fill)
 
-        path1.arc(center:Point(x:x, y:y), radius:size, startAngle: -(Double.pi / 2), endAngle: 0)
+            path1.arc(center:Point(x:x, y:y), radius:size, startAngle: -(Double.pi / 2), endAngle: 0)
 
-        path2.arc(center:Point(x:x, y:y), radius:size, startAngle:0, endAngle:(Double.pi / 2))
+            path2.arc(center:Point(x:x, y:y), radius:size, startAngle:0, endAngle:(Double.pi / 2))
 
-        path3.arc(center:Point(x:x, y:y), radius:size, startAngle:(Double.pi / 2), endAngle: Double.pi)
+            path3.arc(center:Point(x:x, y:y), radius:size, startAngle:(Double.pi / 2), endAngle: Double.pi)
 
-        switch sky_cover1 {
-        case "SKC":
-            canvas.render(circle)
-        case "FEW":
-            canvas.render(path1, circle)
-            Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x,y:y),toppoint:DoublePoint(x:x,y:y-size),rightpoint:DoublePoint(x:x+size,y:y),triangle:path1)
-        case "SCT":
-            canvas.render(path1, path2, circle)
-            Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x,y:y),toppoint:DoublePoint(x:x,y:y-size),rightpoint:DoublePoint(x:x+size,y:y),triangle:path1)
-            Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x,y:y+size),toppoint:DoublePoint(x:x,y:y),rightpoint:DoublePoint(x:x+size,y:y),triangle:path2)
-        case "BKN":
-            canvas.render(path1, path2, path3, circle)
-            Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x,y:y),toppoint:DoublePoint(x:x,y:y-size),rightpoint:DoublePoint(x:x+size,y:y),triangle:path1)
-            Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x,y:y+size),toppoint:DoublePoint(x:x,y:y),rightpoint:DoublePoint(x:x+size,y:y),triangle:path2)
-            Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x-size,y:y),toppoint:DoublePoint(x:x,y:y),rightpoint:DoublePoint(x:x,y:y+size),triangle:path3)
-        case "OVC":
-            canvas.render(fullcircle)
-        default:
-            canvas.render(circle)
-        }
+            switch sky_cover1 {
+            case "SKC":
+                canvas.render(circle)
+            case "FEW":
+                canvas.render(path1, circle)
+                Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x,y:y),toppoint:DoublePoint(x:x,y:y-size),rightpoint:DoublePoint(x:x+size,y:y),triangle:path1)
+            case "SCT":
+                canvas.render(path1, path2, circle)
+                Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x,y:y),toppoint:DoublePoint(x:x,y:y-size),rightpoint:DoublePoint(x:x+size,y:y),triangle:path1)
+                Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x,y:y+size),toppoint:DoublePoint(x:x,y:y),rightpoint:DoublePoint(x:x+size,y:y),triangle:path2)
+            case "BKN":
+                canvas.render(path1, path2, path3, circle)
+                Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x,y:y),toppoint:DoublePoint(x:x,y:y-size),rightpoint:DoublePoint(x:x+size,y:y),triangle:path1)
+                Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x,y:y+size),toppoint:DoublePoint(x:x,y:y),rightpoint:DoublePoint(x:x+size,y:y),triangle:path2)
+                Triangle(canvas:canvas,fillStyle:fillStyle,leftpoint:DoublePoint(x:x-size,y:y),toppoint:DoublePoint(x:x,y:y),rightpoint:DoublePoint(x:x,y:y+size),triangle:path3)
+            case "OVC":
+                canvas.render(fullcircle)
+            default:
+                canvas.render(circle)
+            }
 
-        let id = (Text(location:Point(x:x + (size * 2) - (size / 2), y:y + (size * 2) - (size / 2)), text:"\(station_id)"))
-        id.font = "\(size)pt Arial" 
-        //        let rect = Rect(topLeft:Point(x:x + (size * (3/2)) - 2, y:y + (size * (3/2)) - 2), size:Size(width:(size * 2) + 4, height:size + 4))
-        //        let rectangle = Rectangle(rect:rect, fillMode:.fill)
-//        makeBarb(canvas: canvas, center:Point(x:x,y:y) , wind_dir_degrees: wind_dir_degrees, wind_speed_kt: wind_speed_kt, size: size)
-        canvas.render(FillStyle(color:Color(.black)), FillStyle(color:Color(.white)), id)
-        if let canvasSize = canvas.canvasSize{
-            let turtle = Turtle(canvasSize:canvasSize)
-            drawBarbComplete(turtle: turtle, speed: wind_speed_kt, gust: wind_gust_kt, angle: wind_dir_degrees)
-            canvas.render(turtle)
-            //        drawBarbMax(turtle: turtle, )
-        didDraw = true
+
+            let id = (Text(location:Point(x:x + (size * (3/2)), y:y + (size * (3/2))), text:"\(station_id)"))
+            id.font = "\(size/2)pt Arial"
+            canvas.render(FillStyle(color:Color(.black)), id)
+
+            let temp = (Text(location:Point(x:x - (size * (5/2)), y: y - (size * (3/2))), text:"\(temp_c)"))
+            temp.font = "\(size/2)pt Arial"
+            canvas.render(FillStyle(color:Color(.black)), temp)
+
+            let altimeter = (Text(location:Point(x:x + (size * (3/2)), y: y - (size * (3/2))), text:"\(Int(altim_in_hg))"))
+            temp.font = "\(size/2)pt Arial"
+            canvas.render(FillStyle(color:Color(.black)), altimeter)
+
+            let dew = (Text(location:Point(x:x - (size * (5/2)), y:y + (size * (3/2))), text:"\(Int(dewpoint_c))"))
+            temp.font = "\(size/2)pt Arial"
+            canvas.render(FillStyle(color:Color(.black)), dew)
+
+            let visibilit = (Text(location:Point(x:x - (size * 3), y:y), text:"\(Int(visibility))"))
+            temp.font = "\(size/2)pt Arial"
+            canvas.render(FillStyle(color:Color(.black)), visibilit)
+            
+
+            if ceiling != nil {
+                let ceilin = (Text(location:Point(x:x + (size * 2), y:y), text:"\(Int(ceiling!))"))
+                temp.font = "\(size/2)pt Arial"
+                canvas.render(FillStyle(color:Color(.black)), ceilin)
+            }
+            switch precip {
+            case "-RA":
+                lrain.renderMode = .destinationRect(Rect(topLeft:Point(x:x - (size * (5/2)), y: y - (size / 2)), size:Size(width:size, height:size)))
+                canvas.render(lrain)
+            case "RA":
+                mrain.renderMode = .destinationRect(Rect(topLeft:Point(x:x - (size * (5/2)), y: y - (size / 2)), size:Size(width:size, height:size)))
+                canvas.render(mrain)
+            case "%2BRA":
+                hrain.renderMode = .destinationRect(Rect(topLeft:Point(x:x - (size * (5/2)), y: y - (size / 2)), size:Size(width:size, height:size)))
+                canvas.render(hrain)
+            case "-SN":
+                lsnow.renderMode = .destinationRect(Rect(topLeft:Point(x:x - (size * (5/2)), y: y - (size / 2)), size:Size(width:size, height:size)))
+                canvas.render(lsnow)
+            case "SN":
+                msnow.renderMode = .destinationRect(Rect(topLeft:Point(x:x - (size * (5/2)), y: y - (size / 2)), size:Size(width:size, height:size)))
+                canvas.render(msnow)
+            case "%2BSN":
+                hsnow.renderMode = .destinationRect(Rect(topLeft:Point(x:x - (size * (5/2)), y: y - (size / 2)), size:Size(width:size, height:size)))
+                canvas.render(hsnow)
+            case "BR":
+                mist.renderMode = .destinationRect(Rect(topLeft:Point(x:x - (size * (5/2)), y: y - (size / 2)), size:Size(width:size, height:size)))
+                canvas.render(mist)
+            case "-DZ":
+                hsnow.renderMode = .destinationRect(Rect(topLeft:Point(x:x - (size * (5/2)), y: y - (size / 2)), size:Size(width:size, height:size)))
+                canvas.render(drizzle)
+            default:
+                do {}
+            }
+//            barb(canvas: canvas, x: x, y: y, length: size*2, angle: Double(wind_dir_degrees))
+            if let canvasSize = canvas.canvasSize{
+                let turtle = Turtle(canvasSize:canvasSize)
+                drawBarbMax(turtle: turtle, speed: wind_speed_kt, angle: wind_dir_degrees, gust: wind_gust_kt, canvasSizeX: canvasSize.width, canvasSizeY: canvasSize.height, Point: Point(x:x,y:y))
+                canvas.render(turtle)
+            }
         }
     }
-}
- 
-
- 
+} 

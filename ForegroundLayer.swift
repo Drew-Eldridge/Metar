@@ -1,3 +1,4 @@
+
 import Scenes
 import Foundation
 import Igis
@@ -21,9 +22,10 @@ class ForegroundLayer : Layer {
             }
 
             let plot = StationPlot(
-              x: coords(latitude: met.latitude!, longitude: met.longitude!).x,
-              y: coords(latitude: met.latitude!, longitude: met.longitude!).y,
-              size: 10,
+              x: coords(latitude: met.latitude!, longitude: met.longitude!, Xsize: 1368.0, Ysize: 920.0).x,
+              y: coords(latitude: met.latitude!, longitude: met.longitude!, Xsize: 1920.0, Ysize: 912.0).y,
+              
+              size: 14,
               station_id: met.station_id,
               wind_dir_degrees: met.wind_dir_degrees ?? 0,
               wind_speed_kt: met.wind_speed_kt ?? 0,
@@ -31,7 +33,7 @@ class ForegroundLayer : Layer {
               altim_in_hg: altim_in_hg,
               dewpoint_c: dewpoint_c,
               visibility: 10,
-              precip: 0.0,
+              precip:  met.wx_string,
               precip_in: met.precip_in,
               pcp3hr_in: met.pcp3hr_in,
               pcp6hr_in: met.pcp6hr_in,
@@ -43,24 +45,24 @@ class ForegroundLayer : Layer {
               sky_cover4: met.sky_cover4,
               flight_category: met.flight_category,
               temp_c: temp_c,
-              ceiling: 5000.0,
+              ceiling: met.cloud_base_ft_agl1,
               cloud_base_ft_agl1: met.cloud_base_ft_agl1,
               cloud_base_ft_agl2: met.cloud_base_ft_agl2,
               cloud_base_ft_agl3: met.cloud_base_ft_agl3,
               cloud_base_ft_agl4: met.cloud_base_ft_agl4
             )
             
-//            print(coords(latitude: met.latitude!, longitude: met.longitude!))
+            //            print(coords(latitude: met.latitude!, longitude: met.longitude!))
             insert(entity: plot, at:.front)
         }
-        
-        
-        //         let plot = Station(x: 100, y: 100, size: 10, station_id: "KJFK", wind_barb_direction: 45.0, wind_barb_speed: 15, altim_in_hg: 29.92, dew_point: 12.5, visibility: 10, precip: 0.0, precip_in: nil, pcp3hr_in: nil, pcp6hr_in: nil, pcp24hr_in: nil, snow_in: nil, sky_cover1: "BKN", sky_cover2: "BKN", sky_cover3: nil, sky_cover4: nil, flight_category: "VFR", temp_c: 20.0, ceiling: 5000.0, cloud_base_ft_agl1: 3000, cloud_base_ft_agl2: 4000, cloud_base_ft_agl3: nil, cloud_base_ft_agl4: nil)
-    }
-    func coords(latitude: Double, longitude: Double) -> (x:Int, y:Int) {
-        let x = (longitude + 180) * (1903 / 360)
-        let y = (90 - latitude) * (937 / 180)
+    }    
+    func coords(latitude: Double, longitude: Double, Xsize: Double, Ysize: Double) -> (x:Int, y:Int) {
+        let x = (((longitude + 180) * (Xsize / 360) * 5.5) - Xsize * 3/4) - 75
+        let y = ((90 - latitude) * (Ysize / 180) * 5.5) - Ysize * 43/40 - 75
         return (x:Int(x),y:Int(y))
-    }
+    } 
+     
 } 
+    
+ 
 

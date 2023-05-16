@@ -35,7 +35,7 @@ class Background : RenderableEntity {
         if let canvasSize = canvas.canvasSize{
             if map.isReady {
                 map.renderMode = .destinationRect(Rect(topLeft:Point(), size:canvasSize))
-//                canvas.render(map)
+                canvas.render(map)
             }
         }
     }
